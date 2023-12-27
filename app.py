@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import streamlit as st
 import cv2
 from PIL import Image
@@ -20,7 +19,7 @@ def create_sketch(img):
     return contour
 
 def main():
-    st.header("Hello Artzy", divider="rainbow")
+    st.header("Artzy", divider="rainbow")
     # Add File upload widget
     uploaded_file = st.file_uploader("Add any picture to convert to sketch")
     if uploaded_file is not None:
@@ -37,8 +36,3 @@ def main():
                     st.image(output_sketch)
 
 main()
-=======
-import streamlit as sl
-
-sl.header("Welcome to Artzy", divider="rainbow")
->>>>>>> 44fb60819877bccfe44b432bb4fb78c4a9f0ba85
