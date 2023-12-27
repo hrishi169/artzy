@@ -4,6 +4,7 @@ from PIL import Image
 import numpy as np
 import io
 
+# Function to create a sketch from an image, 
 def create_sketch(img):
     kernel = np.array([
         [1, 1, 1, 1, 1],
@@ -18,7 +19,9 @@ def create_sketch(img):
     contour = 255 - img_diff
     return contour
 
+# Main function.
 def main():
+    # Artzy Heading with Rainbow divider underneath!
     st.header("Artzy", divider="rainbow")
     # Add File upload widget
     uploaded_file = st.file_uploader("Add any picture to convert to sketch")
@@ -29,7 +32,7 @@ def main():
             st.image(bytes_data)
         with col2:
             if st.button('Generate Sketch'):
-                # Generarte Sketch from an input image
+                # Generarte Sketch from an input image.
                 input_image = np.array(Image.open(io.BytesIO(bytes_data))) 
                 output_sketch = create_sketch(input_image)
                 with col3:
