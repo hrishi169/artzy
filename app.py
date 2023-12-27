@@ -1,3 +1,3 @@
-import streamlit as st
+import streamlit as sl
 
-st.header("Hello Artzy", divider="rainbow")
+sl.header("Welcome to Artzy", divider="rainbow")
