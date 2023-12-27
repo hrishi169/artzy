@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import streamlit as st
 import cv2
 from PIL import Image
@@ -36,3 +37,8 @@ def main():
                     st.image(output_sketch)
 
 main()
+=======
+import streamlit as sl
+
+sl.header("Welcome to Artzy", divider="rainbow")
+>>>>>>> 44fb60819877bccfe44b432bb4fb78c4a9f0ba85
