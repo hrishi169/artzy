@@ -62,7 +62,7 @@ def main():
         st.metric(label="Generated",value=get_number_of_sketches(), delta="sketches")
 
     # Add File upload widget
-    uploaded_file = st.file_uploader("Add any picture to convert to sketch")
+    uploaded_file = st.file_uploader("Upload a picture or art to create a sketch (Note: We do not store any art that is uploaded and will be used only to generate a sketch for you)")
     if uploaded_file is not None:
         bytes_data = uploaded_file.getvalue()
         col1, col2, col3 = st.columns(3)
