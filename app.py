@@ -8,7 +8,6 @@ from streamlit_star_rating import st_star_rating
 
 supabase=create_client(st.secrets["SUPABASE_URL"], st.secrets["SUPABASE_KEY"])
 
-sketchId= None
 
 # Function to create a sketch from an image, 
 def create_sketch(img):
@@ -26,9 +25,8 @@ def create_sketch(img):
     return contour
 
 def log_new_sketch():
-    global sketchId
     result, count = supabase.table('artzy_metric').insert({}).execute()
-    sketchId = result[1][0]["id"]
+    st.session_state.sketchId = result[1][0]["id"]
 
 def get_number_of_sketches():
     result, count = supabase.rpc('get_num_of_sketches',{}).execute()
@@ -37,18 +35,23 @@ def get_number_of_sketches():
 def update_rating(value):
     # logic to update rating in a supabase
     if(value > 0):
-        data, count = supabase.table('artzy_metric').update({'rating': value}).eq('id', sketchId).execute()
+        data, count = supabase.table('artzy_metric').update({'rating': value}).eq('id', st.session_state.sketchId).execute()
 
 def update_comments(comments):
-    data, count = supabase.table('artzy_metric').update({'comments': comments}).eq('id', sketchId).execute()
+    data, count = supabase.table('artzy_metric').update({'comments': comments}).eq('id', st.session_state.sketchId).execute()
     st.write("Thanks for your feedback !")
 
 def set_current_sketch(bytes_data):
-     st.session_state.current_sketch = bytes_data
+    # Generarte Sketch from an input image.
+    input_image = np.array(Image.open(io.BytesIO(bytes_data))) 
+    output_sketch = create_sketch(input_image)
+    st.session_state.current_sketch = output_sketch
+    log_new_sketch()
 
 def clear_current_sketch():
     if "current_sketch" in st.session_state:
         del st.session_state["current_sketch"]
+        del st.session_state.sketchId
 
 
 # Main function.
@@ -74,12 +77,8 @@ def main():
         clear_current_sketch()
 
     if "current_sketch" in  st.session_state:
-        # Generarte Sketch from an input image.
-        input_image = np.array(Image.open(io.BytesIO(bytes_data))) 
-        output_sketch = create_sketch(input_image)
-        log_new_sketch()
         with col3:
-            st.image(output_sketch)
+            st.image(st.session_state.current_sketch)
             st.write('How would you rate the sketch?')
             star =  st_star_rating(label = "", maxValue=5, size=20, defaultValue=0, on_click = update_rating)
             with st.form("my_form"):
