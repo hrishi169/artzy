@@ -3,6 +3,12 @@ import cv2
 from PIL import Image
 import numpy as np
 import io
+from supabase import create_client, Client
+from streamlit_star_rating import st_star_rating
+
+supabase=create_client(st.secrets["SUPABASE_URL"], st.secrets["SUPABASE_KEY"])
+
+sketchId= None
 
 # Function to create a sketch from an image, 
 def create_sketch(img):
@@ -19,10 +25,42 @@ def create_sketch(img):
     contour = 255 - img_diff
     return contour
 
+def log_new_sketch():
+    global sketchId
+    result, count = supabase.table('artzy_metric').insert({}).execute()
+    sketchId = result[1][0]["id"]
+
+def get_number_of_sketches():
+    result, count = supabase.rpc('get_num_of_sketches',{}).execute()
+    return result[1]
+
+def update_rating(value):
+    # logic to update rating in a supabase
+    if(value > 0):
+        data, count = supabase.table('artzy_metric').update({'rating': value}).eq('id', sketchId).execute()
+
+def update_comments(comments):
+    data, count = supabase.table('artzy_metric').update({'comments': comments}).eq('id', sketchId).execute()
+    st.write("Thanks for your feedback !")
+
+def set_current_sketch(bytes_data):
+     st.session_state.current_sketch = bytes_data
+
+def clear_current_sketch():
+    if "current_sketch" in st.session_state:
+        del st.session_state["current_sketch"]
+
+
 # Main function.
 def main():
-    # Artzy Heading with Rainbow divider underneath!
-    st.header("Artzy", divider="rainbow")
+
+    header_col, metric_column = st.columns([7,1])
+    with header_col:
+        # Artzy Heading with Rainbow divider underneath!
+        st.header("Artzy", divider="violet")
+    with metric_column: 
+        st.metric(label="Generated",value=get_number_of_sketches(), delta="sketches")
+
     # Add File upload widget
     uploaded_file = st.file_uploader("Add any picture to convert to sketch")
     if uploaded_file is not None:
@@ -31,11 +69,23 @@ def main():
         with col1:
             st.image(bytes_data)
         with col2:
-            if st.button('Generate Sketch'):
-                # Generarte Sketch from an input image.
-                input_image = np.array(Image.open(io.BytesIO(bytes_data))) 
-                output_sketch = create_sketch(input_image)
-                with col3:
-                    st.image(output_sketch)
+            st.button('Generate Sketch', on_click=set_current_sketch, args=(bytes_data,))
+    else:
+        clear_current_sketch()
+
+    if "current_sketch" in  st.session_state:
+        # Generarte Sketch from an input image.
+        input_image = np.array(Image.open(io.BytesIO(bytes_data))) 
+        output_sketch = create_sketch(input_image)
+        log_new_sketch()
+        with col3:
+            st.image(output_sketch)
+            st.write('How would you rate the sketch?')
+            star =  st_star_rating(label = "", maxValue=5, size=20, defaultValue=0, on_click = update_rating)
+            with st.form("my_form"):
+                txt = st.text_area(label="Feedback")
+                submitted = st.form_submit_button("Submit")
+                if submitted:
+                    update_comments(txt)
 
 main()
