@@ -4,4 +4,3 @@ Pillow
 numpy
 supabase
 st-star-rating
-CV2
